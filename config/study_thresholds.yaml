@@ -1,0 +1,92 @@
+# ============================================================
+# TCRIE - Study Configuration & Algorithmic Thresholds
+# Author: Nampally Aryan
+# ============================================================
+
+study:
+  id: "CDISCPILOT01"
+  name: "CDISC Pilot Study"
+  description: "Temporal Clinical Risk Intelligence Engine - CDISC Pilot Dataset"
+
+# --- CUSUM (Cumulative Sum) Drift Detection ---
+cusum:
+  # k: allowable variance (slack value). Smaller k = more sensitive.
+  k: 0.5
+  # threshold: alarm limit. When S_t exceeds this, drift is flagged.
+  threshold: 5.0
+  # baseline_window: number of initial periods to compute baseline mean (mu_0)
+  baseline_window: 4
+
+# --- Mahalanobis Distance Anomaly Detection ---
+mahalanobis:
+  # critical_distance: sites exceeding this distance are flagged as anomalous
+  critical_distance: 3.0
+  # regularization: small value added to covariance diagonal for numerical stability
+  regularization: 1.0e-6
+
+# --- Fused Risk Score Weights ---
+risk_score:
+  # Enable adaptive recalibration from each incoming dataset.
+  # Base values below are still used as safe fallback bounds.
+  dynamic_thresholds: true
+
+  weights:
+    # w1: weight for deterministic quality checks (Q_score)
+    w1: 0.30
+    # w2: weight for CUSUM temporal drift score
+    w2: 0.35
+    # w3: weight for Mahalanobis cross-domain anomaly score
+    w3: 0.35
+  # Risk level thresholds (0-100 scale)
+  thresholds:
+    low: 25
+    medium: 50
+    high: 75
+    # Scores >= 75 are CRITICAL
+
+  # Base normalization caps (adaptive mode can raise these if new data requires it)
+  cusum_max: 10.0
+  mahalanobis_max: 6.0
+
+# --- Deterministic Quality Rules ---
+quality_rules:
+  # Minimum AE reporting rate (AEs per subject) before flagging
+  min_ae_rate: 0.5
+  # Maximum acceptable lab coefficient of variation compression
+  max_lab_cv_compression: 0.15
+  # Maximum enrollment velocity (subjects per week)
+  max_enrollment_velocity: 5.0
+
+# --- API Configuration ---
+api:
+  # Authentication key for API endpoints.
+  # Set to empty string "" to disable authentication.
+  auth_key: "tcrie-dev-key-2026"
+
+# --- Critical-to-Quality (CTQ) Features (RBQM Alignment) ---
+# Features listed here receive 1.5x influence multiplier in anomaly scoring
+# and are highlighted in the dashboard as CTQ indicators.
+ctq_features:
+  - ae_reporting_rate
+  - serious_ae_rate
+  - lab_cv_score
+
+# --- Lab Test Codes of Interest ---
+lab_tests:
+  - ALT
+  - AST
+  - ALB
+  - ALP
+  - BILI
+  - BUN
+  - CA
+  - CHOL
+  - CK
+  - CREAT
+  - GGT
+  - GLUC
+  - K
+  - PHOS
+  - PROT
+  - SODIUM
+  - URATE
